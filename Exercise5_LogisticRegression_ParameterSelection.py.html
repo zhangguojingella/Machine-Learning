@@ -1,0 +1,66 @@
+
+# coding: utf-8
+
+# # Logistic Regression & Cross Validation
+# 
+# In this exercise, you will use logistic regression to classify breast cancer as either malignant or benign. First run the code below to print and read the description of the data set. 
+
+# In[16]:
+
+
+from sklearn.datasets import load_breast_cancer
+import numpy as np
+
+DataCancer=load_breast_cancer()
+print(DataCancer.keys())
+print(DataCancer.DESCR)
+
+X_features=DataCancer.data
+Y_targetClass=DataCancer.target
+
+
+# ### A) Use logistic regression, with ridge regularization and tuning parameter set to 1. Find the accuracy of the model. Scale the features  to have zero mean and unit variance. 
+# - Use random_state = 0 in the train_test_split.
+
+# In[23]:
+
+
+# write your code here
+from sklearn.linear_model import Ridge 
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import Ridge 
+from sklearn import preprocessing
+X_train, X_test, Y_train, Y_test = train_test_split(X_features,Y_targetClass,random_state = 0)
+scaler = preprocessing.StandardScaler().fit(X_train)
+X_train_trans = scaler.transform(X_train)
+X_test_trans = scaler.transform(X_test)
+LogRegModel = LogisticRegression(C=1.0,penalty='l2',random_state = 0).fit(X_train_trans,Y_train)
+res = LogRegModel.score(X_test_trans,Y_test)
+res
+
+
+# ### B) For the same problem, we also use logistic regression but want to select the best tuning parameter of Ridge regularization in logistic regression. We try the following set of values for the tuning parameter: [0.01, 0.1, 1, 10, 100], and use the five fold cross validation. Find the best tuning parameter in this set, and the test accuracy of the model when the best tuning parameter is selected. 
+# - Feature scaled as in part A
+
+# In[33]:
+
+
+#write your code here
+from sklearn.model_selection import cross_val_score
+best_score = 0
+test = [0.01, 0.1, 1, 10, 100]
+for i in test:
+    RegModel = LogisticRegression(C=i,penalty='l2',random_state = 0).fit(X_train_trans,Y_train)
+    scores = cross_val_score(RegModel,X_train_trans,Y_train,cv = 5)
+    score = np.mean(scores)
+    print(score)
+    if score > best_score:
+        best_score = score
+        best_parameters = i
+selectedModel = LogisticRegression(C=best_parameters,penalty='l2',random_state = 0).fit(X_train_trans,Y_train)
+test_score = selectedModel.score(X_test_trans,Y_test)
+print("The best alpha for regularization is:", best_parameters)
+print("Test score of this regularization is:", test_score )
+print("score of validation set is:", best_score)
+

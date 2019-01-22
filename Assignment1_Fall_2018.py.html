@@ -1,0 +1,473 @@
+
+# coding: utf-8
+
+# <div style="text-align: center;">
+# <h2>INFSCI 2595 Machine Learning - Fall 2018 </h2>
+# <h1 style="font-size: 250%;">Assignment #1</h1>
+# <h3>Due: Sunday 09/30/2018</h3>
+# <h3>Total points: 100 </h3>
+# </div>
+
+# In[2]:
+
+
+# Type in your information in the double quotes
+firstName = "Guojing"
+lastName = "Zhang"
+pittID = "guz23"
+
+
+# In[4]:
+
+
+#Libraries 
+get_ipython().run_line_magic('matplotlib', 'inline')
+import numpy as np 
+import pandas as pd
+import seaborn as sns
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+from IPython.display import Image
+import statsmodels.formula.api as smf
+from sklearn.datasets import load_boston
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn import datasets
+
+
+# <h3>  Problem #1. K-nearest neighbors  [20 points] </h3> 
+# 
+# The table below provides a training data set containing six observations, three predictors, and one qualitative response variable.
+# Suppose we wish to use this data set to make a prediction for Y when X1 = 1.2, X2 = 1.3, X3 = 2.4 using K-nearest neighbors.
+# hint: in problems 1-2 and 1-3, use "stats.mode" from scipy library and "nsmallest" function in dataframe to get n smallest values from the distance table calculated in 1-1.
+
+# |Obs.|X1|X2|X3|Y
+# |--|-------------------------------|
+# |1 |0.1|2.9|0|Green|
+# |2 |2.2|0|0|Green|
+# |3|0|1.3|3.3|Green|
+# |4|0|1.4|2.5|Red|
+# |5|-1.2|0|1.4|Red|
+# |6|1.1|1.2|1.1|Green|
+# |7|1.5|0|0|Green|
+# |8|0|1.3|1.9|Red|
+# |9|0|2.8|0|Green|
+
+# <b>Problem #1-1.</b> Compute the Euclidean distance between each observation and the test point, X1 = 1.2, X2 = 1.3, X3 = 2.4
+# The output should be a (9*1) column vector where each row shows the distance between the observations and the test point.
+# 
+
+# In[39]:
+
+
+frame = pd.DataFrame({'X1':[0.1, 2.2, 0, 0, -1.2, 1.1, 1.5, 0, 0],
+                 'X2':[2.9, 0, 1.3, 1.4, 0, 1.2, 0, 1.3, 2.8], 
+                 'X3':[0,0,3.3,2.5,1.4,1.1,0,1.9,0],
+                 'Y':['Green', 'Green', 'Green','Red','Red','Green','Green','Red','Green']},
+                    index = range(1,10))
+test = [1.2, 1.3, 2.4]
+res = []
+test[0]
+for row in range(frame.shape[0]):
+    res.append(((test[0] - frame.iloc[row,0])**2 + (test[1] - frame.iloc[row,1])**2 + (test[2] - frame.iloc[row,2])**2)**0.5)
+dis = np.array(res).reshape(9,1)
+
+
+# =========================================================================================================================
+
+# <b>Problem #1-2.</b> What is our prediction with K = 1? and explain why.
+
+# In[41]:
+
+
+#Answer code
+frame['dis'] = dis
+frame.nsmallest(1,'dis')
+
+
+# The test y is red, because the nearest value of test is red, the conditional probability is 100%.
+
+# =========================================================================================================================
+
+# <b>Problem #1-3.</b> What is our prediction with K = 3? K = 5? and explain why.
+
+# In[43]:
+
+
+# Answer code 
+frame.nsmallest(3,'dis')
+
+
+# The test y is red, the conditional probability(y is red) is 66.6%, the probability(y is green) is 33.3%
+
+# In[42]:
+
+
+# Answer code 
+frame.nsmallest(5,'dis')
+
+
+# The test y is green, the conditional probability(y is green) is 60%, the probability(y is green) is 40%
+
+# =========================================================================================================================
+
+# <b>Problem #1-4.</b>  How using a different number of K has an impact on the performance? explain.
+
+# k decides how many instances when we determinate the classifier of test. If the k is too large, it will cause underfitting, if k is too small, will cause overfitting. 
+
+# =========================================================================================================================<br>=========================================================================================================================
+
+# <h3>  Problem #2. Answer those questions about linear regression [30 points] </h3>  
+# - Writing a code is not required for this question<br>
+# - Feel free to select any type of submission you are comfortable with (Since it may require some mathematical formula and symbols; MS Word, or scanned version of your writing will be fine) 
+
+# <b>Problem #2-1.</b> Find the least squared fit of a linear regression model using the following traning data.
+
+# |Height(x)|Weight(y)|
+# |:--:|:-------------------------------:|
+# |63|127|
+# |64|121|
+# |66|142|
+# |69|157|
+# |69|162|
+# |71|156|
+# |71|169|
+# |72|165|
+# |73|181|
+
+# ![IMG_0593.jpg](attachment:IMG_0593.jpg)
+
+# ========================================================================================================================
+
+# <b>Problem #2-2.</b> Given the test data below, compute the R-squared metric of the fitted model.
+
+# |X(feeding)|Y(death)|
+# |:--:|:-------------------------------:|
+# |27|10|
+# |41|9|
+# |56|28|
+# |50|40|
+# |73|39|
+# |38|59|
+# |72|60|
+# |87|62|
+# |51|64|
+
+# ![IMG_0609.jpg](attachment:IMG_0609.jpg)
+
+# ======================================================================================================================= <br>=======================================================================================================================
+
+# <h3>  Problem #3. This question involves the use of multiple linear regression on the Boston dataset [30 points]</h3> <br>
+# In this part, you should download and analyze **"Boston House Prices"** dataset. <br>
+# 
+# Here use a code below to download the  dataset: 
+
+# In[5]:
+
+
+dataset = load_boston()
+print(dataset.keys())
+
+
+# Hint: You may need to "import statsmodels.formula.api as smf" for some statistical analysis
+
+# <b>Problem #3-1</b> Print the description of the dataset. 
+# 
+# <b> Answer the following question:</b> 
+# 
+# - Whole dataset contains 14 attributes, (13 numeric/categorical predictive and 1 target value)  what is a abbreviation of the target value? 
+
+# In[6]:
+
+
+#Code
+dataset['feature_names']
+dataset['DESCR']
+
+
+# The name of target value is MEDV, as is shown in the description.
+
+# =======================================================================================================================
+
+# <b>Problem #3-2 </b> Generate descriptive statistics using DataFrame. (hint: use "DataFrame . describe" function)<br>
+# 
+# Follow two steps to answer questions.
+# - Create a DataFrame usnig "data" from the dataset with columns using "feature_names".
+# - Generate descriptive statistics 
+# 
+# <b> Answer the following questions:</b> 
+# 
+# -  Which feature has the lowest range (minimum and maximum value)?
+# 
+# -  Which feature has the higest mean?  
+# 
+# -  Which feature has a highest variance? 
+
+# In[8]:
+
+
+#Code
+db = pd.DataFrame(dataset.data,columns = dataset['feature_names'])
+des = db.describe()
+des
+
+
+# The biggest range is TAX, which is 523, and the smallest range is NOX, which is 0.486.
+# <br>TAX has the highest mean and highest variance.
+# 
+
+# =======================================================================================================================
+
+# <b>Problem #3-3 </b> Feature Scaling
+# 
+# <b> Answer the following questions:</b> 
+# 
+# - From the information above, Do you recommend **feature scaling** to improve performance? Explain.  
+# 
+# - What is a difference between MinMaxScaler and StandardScaler? 
+
+# Yes, Scaling is very useful here because as showed in the dataframe, the range exists huge gap between features
+# so feature with larger amount may wrongly over influence the prediction.
+# 
+# 
+
+# =======================================================================================================================
+
+# <b>Problem #3-4 </b> Calculate and report **correlations** between features and the target 
+# 
+# <b> Answer the following questions:</b> 
+# 
+# - What is a difference between positive and negative numbers on the correlation table? Explain.
+# - What is the feature that is most correlated with the target? Do you think it is the most or the least helpful features in predicting the
+# target class? Explain.
+
+# In[15]:
+
+
+# code here
+for i in list(db):
+    print(np.corrcoef(dataset.target,db[i])[0][1])
+
+
+# positive correlation means the increase in feature will cause increase in the target. 
+# <br>The negative correlation is the increase in feature cause decrease in the target.
+# <br>LSTAT is most correlated feature with the target, I think it is the most helpful features in predicting the target class.
+
+# =======================================================================================================================
+
+# <b>Problem #3-5 </b> 
+# Follow two steps to answer questions.
+# 
+# - Add 1 more column (dataset.target) to your DataFrame (give a name).
+# 
+# - Find the correlation matrix that shows the correlation between each pair of features. <br>
+# 
+# - Plot a correlation matrix<br> You can use the code below or write your own code to plot a correlation matrix *(extra point for writing your own code)* 
+# 
+#  <b>Answer the following questions:</b> 
+# 
+# - What is the correlation between the feature RM and the LSTAT?
+# - What does this value of correlation indicate?
+
+# In[16]:
+
+
+#code here
+db['target'] = dataset.target; 
+f, ax = plt.subplots(figsize=(6, 5))
+cmap = sns.diverging_palette(220, 10, as_cmap=True)
+sns.heatmap(db.corr(),cmap=cmap,center=0)
+
+
+# In[17]:
+
+
+db.corr()
+
+
+# The correlation between the feature RM and the LSTAT is -0.613808. It indicates there exists negative correlation between RM and LSTAT.
+# <br> It doesn't satisfy additive assumption, these two features are not independent.
+
+# =======================================================================================================================
+
+# 
+# 
+
+# <b>Problem #3-6 </b> Scatter plot. <br> 
+# 
+# Follow three steps to answer questions <br> 
+# - Plot RM versus target variable 
+# - Plot TAX versus target variable 
+# - Plot LSTAT versus target variable <br> 
+# 
+# <b> Answer the following questions:</b> 
+# - Is the relationship linear?
+# - Which looks the most nonlinear? Explain your choice
+# 
+
+# **Plot RM versus target variable**
+
+# In[18]:
+
+
+#code here
+line1 = plt.scatter(x = db.RM,y=db.target)
+
+
+# **Plot TAX versus target variable**
+
+# In[19]:
+
+
+#code here
+line2 = plt.scatter(x = db.TAX,y=db.target)
+
+
+# **Plot LSTAT versus target variable **
+
+# In[20]:
+
+
+line3 = plt.scatter(x = db.LSTAT,y=db.target)
+
+
+# RM versus target is linear relationship, the left two is not.
+# <br>TAX versus target is the most nonlinear.
+
+# =======================================================================================================================
+
+# <b>Problem #3-7.</b> Follow steps to answer questions.
+# > *Use train_test_split() with the option "random_state=0".
+# 
+# 1. Fit a linear regression model with RM and LSTAT features only. Find the R-squared metric. 
+# 2. Fit a linear regression model using RM, LSTAT and include the interaction term (RM * LSTAT). How R-squared metric differs from the previous model without interaction term?
+# 3. Fit a linear regression model using LSTAT and include the polynomial term ( $LSTAT^2$).  Find the R-squared metric.
+# 4. Fit linear regression model using LSTAT and include the polynomial term ( $LSTAT^2$ and $LSTAT^4$ ). Find the R-squared metric. 
+# - How does R-squared metric differ in the previous models ? <br> Comment your observation. 
+
+# **1.  Fit a linear regression model with RM and LSTAT features only**
+
+# In[21]:
+
+
+#code here
+X = db[['RM', 'LSTAT']].values
+Y = db.target
+X_train, X_test, Y_train, Y_test= train_test_split(X, Y, random_state= 0)
+linreg = LinearRegression().fit(X_train,Y_train)
+res = linreg.score(X_test,Y_test)
+res
+
+
+# **2 Fit a linear regression model using RM, LSTAT and include the interaction term (RM * LSTAT)**
+
+# In[22]:
+
+
+#code here
+db['RM*LSTAT'] = db.RM*db.LSTAT 
+X = db[['RM', 'LSTAT','RM*LSTAT']].values
+Y = db.target
+X_train, X_test, Y_train, Y_test= train_test_split(X, Y, random_state= 0)
+linreg = LinearRegression().fit(X_train,Y_train)
+res = linreg.score(X_test,Y_test)
+res
+
+
+# As is discussed in 3-5, the correlation between the feature RM and the LSTAT is -0.613808. 
+# <br>It indicates there exists negative correlation between RM and LSTAT. 
+# <br>So when adding one interaction term, the R-squared increase, means the model has higher accurancy.
+
+# **3 Fit a linear regression model using LSTAT and include the polynomial term (  LSTAT^2 )**
+
+# In[23]:
+
+
+#code here
+db['LSTAT2'] = db.LSTAT*db.LSTAT 
+X = db[['LSTAT','LSTAT2']].values
+Y = db.target
+X_train, X_test, Y_train, Y_test= train_test_split(X, Y, random_state= 0)
+linreg = LinearRegression().fit(X_train,Y_train)
+res = linreg.score(X_test,Y_test)
+res
+
+
+# The correlation between LSTAT and target is -0.737663, showing high correlation, adding polynomial term of LSTAT may increase the accurancy.
+# <br> But not sure.
+# <br> This model works worser than the first one, RM feature works better than the polynomial term.
+
+# **4. Fit linear regression model using LSTAT and include the polynomial term (  LSTAT^2  and  LSTAT^4)**
+
+# In[24]:
+
+
+#code here
+db['LSTAT4'] = db.LSTAT*db.LSTAT*db.LSTAT*db.LSTAT
+X = db[['LSTAT','LSTAT2','LSTAT4']].values
+Y = db.target
+X_train, X_test, Y_train, Y_test= train_test_split(X, Y, random_state= 0)
+linreg = LinearRegression().fit(X_train,Y_train)
+res = linreg.score(X_test,Y_test)
+res
+
+
+# The R square don't have big difference compared to the third.
+
+# =========================================================================================================================
+
+# <b>Problem #3-8.</b> Fit all features (13 features) in the dataset to a multiple linear regression model, and report<br> 
+# 
+# > (1) p-values for each feature. 
+# 
+# <b> Answer the following questions:</b> 
+# 
+# - What does p-value means
+# - What are the important features? <br> 
+# 
+
+# In[36]:
+
+
+#code here
+model = smf.ols('target ~ CRIM+ZN+INDUS+CHAS+NOX+RM+AGE+DIS+RAD+TAX+PTRATIO+B+LSTAT',db)
+res = model.fit()
+res.summary().tables[1]
+
+
+# P value measures the association between target and features. 
+# <br>small p value shows there is an association, large shows no.
+# <br>P value shows among 13 features, most are important except INDUS and AGE.
+
+# ==========================================================================+============================================== <br> =========================================================================================================================
+
+# <b>Problem #4.</b>  Encoding categorical values
+# 
+# Given a dataset (encoding.csv) with three features and twenty samples with the following types:
+# 
+# - "Gender" is nominal feature in which order is not important (mapping can be used)
+# - "Race" is nominal feature (all values have the same weight). label encoding and one-hot encoding can be used together.
+# - "Satisfaction" is nominal feature in which order is important (label encoding can be used)
+# 
+# Use appropriate encoding method for each feature to convert the categorical values into a meaningful numerical values.
+
+# In[42]:
+
+
+#code here
+from pandas import read_csv
+from sklearn import preprocessing
+encoding=read_csv('encoding.csv')
+encoding['Gender'] = encoding.Gender.map({'Male':0,'Female':1})
+
+encoding = pd.get_dummies(encoding, columns=["Race"])
+
+le = preprocessing.LabelEncoder()
+le.fit(encoding['Satisfaction'].values)
+encoding['Satisfaction'] = le.transform(encoding['Satisfaction'].values)
+encoding
+
+
+# ### Submission
+# Once you complete the assignment, <br>
+# Name your file in the format of <b style='color:red'>LASTNAME-PITTID-Assignment1.ipynb</b>, and submit it on the courseweb

@@ -1,0 +1,76 @@
+
+# coding: utf-8
+
+# ## SVM 
+# 
+# In this part, we will apply SVM for classification of breast cancer using the Wisconsin's data set. Read the description of the dataset, then answer the following questions. Whenever needed to split the data, use random_state=0 in train_test_split
+# 
+# #### 1) Find the accuracy of SVM classifier with parameter C=0.1, and  radial basis function kernel (rbf) of parameter Gamma =0.2. (5 pt)
+# 
+
+# In[6]:
+
+
+from sklearn.svm import SVC
+from sklearn.datasets import load_breast_cancer
+#from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler 
+from sklearn.model_selection import cross_val_score
+import numpy as np
+
+CancerDataset=load_breast_cancer()
+print(CancerDataset.keys())
+print(CancerDataset.DESCR)
+
+
+# In[7]:
+
+
+X_train, X_test, Y_train, Y_test = train_test_split(CancerDataset.data,CancerDataset.target,random_state = 0)
+svmmodel = SVC(kernel='rbf',gamma=0.2,C=0.1).fit(X_train,Y_train)
+res = svmmodel.score(X_test,Y_test)
+print(res)
+
+
+# #### 2) Repeat part (1) but scale the features with MinMaxScaler. Compare results of (1) and (2) and comment on the results. (5 pt)
+# 
+
+# In[8]:
+
+
+scaler = MinMaxScaler().fit(X_train)
+X_train_trans = scaler.transform(X_train)
+X_test_trans = scaler.transform(X_test)
+svmmodel = SVC(kernel='rbf',gamma=0.2,C=0.1).fit(X_train_trans,Y_train)
+res1 = svmmodel.score(X_test_trans,Y_test)
+print(res1)
+
+
+# The result after scaling is much better. Because the range of features are totally different. So the scaling can improve the accuracy.
+
+# #### 3) Using scaled features, find best SVM classifier. Try values of the regularization C=[0.1, 1, 5] and RBF parameter Gamma = [ 0.1, 1, 5]. Use 5-fold cross validation to find the best parameters (using all possible combinations of these values for C and gamma). (10 pt)
+
+# In[10]:
+
+
+C=[0.1, 1, 5] 
+Gamma = [0.1, 1, 5]
+best_score = 0
+for i in C:
+    for j in Gamma:
+        svmmodel = SVC(kernel='rbf',gamma=j,C=i)
+        scores = cross_val_score(svmmodel,X_train_trans,Y_train,cv = 5)
+        score = np.mean(scores)
+#         print(score)
+        if score > best_score:
+            best_score = score
+            best_parameters1 = i
+            best_parameters2 = j
+print("The best C is is: ")
+print(best_parameters1)
+print("The best Gamma is is: ")
+print(best_parameters2)
+print("The best accuracy is: ")
+print(best_score)
+

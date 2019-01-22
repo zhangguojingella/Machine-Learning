@@ -1,0 +1,129 @@
+
+# coding: utf-8
+
+# ## Exercise: Discriminant Analysis and Unbalanced Datasets
+# 
+# 
+# In this exercise, we will use the handwritten digits data set of Scikit-learn (load_digits). Run the code below. Read the description of the data set and check a sample image. 
+# 
+
+# In[2]:
+
+
+get_ipython().run_line_magic('matplotlib', 'inline')
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_digits
+import matplotlib.pyplot as plt 
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, precision_score, recall_score
+from sklearn.model_selection import cross_val_score
+import numpy as np
+
+DigitsData=load_digits()
+print(DigitsData.keys()) 
+print(DigitsData.DESCR) #read description of the dataset
+print(DigitsData.data[1])
+
+#plot one of the images in the data
+plt.gray() 
+plt.matshow(DigitsData.images[1]) 
+plt.show() 
+
+
+# #### A) Our objective is to build classfiers that identify digit 9. For this purpose, answer the following (3pts):
+# 
+# 1) Define the target value to be equal to 1 (or True) only for digit 9, and 0 (or False) otherwise.
+# You can define: y= (DigitsData.target == 9)
+# 
+# 
+# - Find how many times y is equal to 9 and how many times it is not equal to 9
+# 
+# You can use: print(sum(y==True)); print(sum(y==False))
+# 
+# 
+# COMMENT: what do you observe? Is the dataset for this classification problem balanced or not?
+
+# In[20]:
+
+
+# write your code here
+y = (DigitsData.target == 9)
+print(sum(y==True))
+print(sum(y==False))
+
+
+# The digit 9 has 1/10 among all values. The dataset is not balanced.
+
+# #### B) Find the accuracy of a dummy classifier (imported below) that always selects the majority class. Use the DigitsData.data as features and y (defined above) as the response. (3pts)
+# 
+#      - Use train_test_split with random_state= 0 for splitting the data
+#      - Select dummy classifier with "most frequent" strategy as follows: 
+#          - dummy_majority=DummyClassifier(strategy='most_frequent')
+# 
+
+# In[19]:
+
+
+# write your code here
+from sklearn.dummy import DummyClassifier
+X_train, X_test, Y_train, Y_test = train_test_split(DigitsData.data,y,random_state = 0)
+dummy_majority=DummyClassifier(strategy='most_frequent')
+dum = dummy_majority.fit(X_train,Y_train)
+res = dum.score(X_test,Y_test)
+print(res)
+
+
+# #### C) Instead of a dummy classifier, use an LDA classifer (with default threshold) to solve the above classification problem. Find accuracy, confusion matrix, precision, and recall. (5pts)
+# 
+# - Note: you may get a warning that features are correlated (collinear). However, we can still get the performance metrics as usual
+
+# In[33]:
+
+
+# write your code here
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+clf = LinearDiscriminantAnalysis()
+model = clf.fit(X_train,Y_train)
+accuracy = model.score(X_test,Y_test)
+print(accuracy)
+from sklearn.metrics import confusion_matrix,precision_score,recall_score
+PreOutput = model.predict(X_test)
+confusion = confusion_matrix(Y_test,PreOutput)
+print(confusion)
+print("The precision is: ")
+print(precision_score(Y_test,PreOutput))
+print("The recall is: ")
+print(recall_score(Y_test,PreOutput))
+
+
+# #### D) Use QDA classifer to perform the classification. Find accuracy, confusion matrix, precision, and recall. (5pts)
+# - Note: expect to see a warning that features are correlated (collinear). You can still get performance metrics.
+
+# In[34]:
+
+
+# write your code here
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+QDAmodel = QuadraticDiscriminantAnalysis().fit(X_train,Y_train)
+accuracy = QDAmodel.score(X_test,Y_test)
+print(accuracy)
+PreOutput = QDAmodel.predict(X_test)
+confusion = confusion_matrix(Y_test,PreOutput)
+print(confusion)
+print("The precision is: ")
+print(precision_score(Y_test,PreOutput))
+print("The recall is: ")
+print(recall_score(Y_test,PreOutput))
+
+
+# #### E) From the prediction of the QDA, plot the ROC curve. (4pts)
+
+# In[51]:
+
+
+from sklearn.metrics import roc_curve
+fpr, tpr, thresholds = roc_curve(Y_test, PreOutput)
+plt.plot(fpr, tpr)
+

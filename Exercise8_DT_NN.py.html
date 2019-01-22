@@ -1,0 +1,123 @@
+
+# coding: utf-8
+
+# ### Decision trees
+# 
+# 
+# Here, we will use decision trees for classification of Iris species (Setosa, Versicolor, Virginica). Use random_state=0 for splitting and building all models.
+# 
+# #### 1) Fit decision tree with maximum depth (max_depth) of 2 and the default gini index for building the tree. Find the classification accuracy. (3pts)
+# 
+# - Visualize the tree as follows (optional). First, import the graphviz package from terminal using the following:
+# 
+# brew install graphviz
+# 
+# OR
+# 
+# #conda install -c anaconda graphviz  
+# #conda install -c anaconda python-graphviz 
+# 
+# Then, use can use the package to visulaize the decision tree as follows: 
+#         
+#         from sklearn.tree import export_graphviz
+#         import graphviz 
+#         
+#      dot_data=export_graphviz(FittedTreeModel,class_names=iris_dataset.target_names,   feature_names=iris_dataset.feature_names,out_file=None)
+#         
+#        graph = graphviz.Source(dot_data)  
+#        graph 
+# 
+# 
+
+# In[6]:
+
+
+
+get_ipython().run_line_magic('matplotlib', 'inline')
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier
+dataset = load_iris()
+X_train, X_test, Y_train, Y_test = train_test_split(dataset.data,dataset.target,random_state = 0)
+treeModel = DecisionTreeClassifier(max_depth=2, criterion='gini').fit(X_train,Y_train)
+res = treeModel.score(X_test,Y_test)
+print(res)
+
+
+# #### 2) Use random forests to classify the Iris species. The random forests combines 4 decision trees, each of maximum depth 2 and maximum number of features considered at each split is 2. What is the classification accuracy? (3pts)
+# 
+# 
+
+# In[7]:
+
+
+forestModel= RandomForestClassifier (n_estimators=4, max_features=2,
+max_depth=2, random_state=0).fit(X_train,Y_train)
+res = forestModel.score(X_test,Y_test)
+print(res)
+
+
+# #### 3) Use AdaBoost with 4 decision tree models to perform the classification of the Iris species. What is the accuracy? Comment on results. (3pts)
+# 
+
+# In[8]:
+
+
+BoostModel= AdaBoostClassifier(n_estimators=4).fit(X_train,Y_train)
+res = BoostModel.score(X_test,Y_test)
+print(res)
+
+
+# the adaboosting works best among these three models. 
+
+# ### Neural networks
+
+# #### Apply Neural networks (multilayer perceptron) to classify the Iris species, Build a model that has two hidden layers, the first layer has 10 neurons and second layer has 5 neurons. Use 'tanh' activation function, and set the regularization parameter alpha=0.5. Scale the feautures with MinMaxScaler. Try the following settings (a)-(c) and report the accuracy, then comment on the results.
+# 
+# a) Use gradient descent to solve the optimization  problem (i.e. get the weights), and choose random_state=0 (which corresponds to a particular initializationo of weight values), and set max_iter=5000. Print the accuracy. (3pts)
+#    
+# b) Repeat (a) above but with a model that uses random_state=10 to initialize the weights. Print the accuracy. (2pts)
+#     
+#     
+# c) Repeat (b) but with model that use L-BFGS (a numerical quasi-Newton method of optimization) instead of stochastic gradient descent to find the weights. Print the accuracy (3pts)
+#     
+# d) Comment on results (3pts)
+
+# In[10]:
+
+
+from sklearn.datasets import load_iris
+from sklearn.preprocessing import MinMaxScaler 
+from sklearn.neural_network import MLPClassifier
+
+scaler = MinMaxScaler().fit(X_train)
+X_train_trans = scaler.transform(X_train)
+X_test_trans = scaler.transform(X_test)
+
+MLPmodel = MLPClassifier(solver='sgd', activation='tanh', random_state=0,
+                         hidden_layer_sizes=[10,5], alpha=0.5, max_iter=5000).fit(X_train_trans,Y_train)
+res = MLPmodel.score(X_test_trans,Y_test)
+print(res)
+
+
+# In[11]:
+
+
+MLPmodel = MLPClassifier(solver='sgd', activation='tanh', random_state=10,
+                         hidden_layer_sizes=[10,5], alpha=0.5, max_iter=5000).fit(X_train_trans,Y_train)
+res = MLPmodel.score(X_test_trans,Y_test)
+print(res)
+
+
+# In[12]:
+
+
+MLPmodel = MLPClassifier(solver='lbfgs', activation='tanh', random_state=0,
+                         hidden_layer_sizes=[10,5], alpha=0.5, max_iter=5000).fit(X_train_trans,Y_train)
+res = MLPmodel.score(X_test_trans,Y_test)
+print(res)
+
+
+# The random state will influence the test accuracy. lbfgs model works best among these models. 
