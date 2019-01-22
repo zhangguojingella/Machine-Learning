@@ -1,3 +1,3 @@
 # Machine-Learning
 
-Machine Learning model practices of Guojing Zhang.
+Machine Learning and data mining model practices of Guojing Zhang using R and Python.
